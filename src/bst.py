@@ -1,4 +1,4 @@
-"""basic bst implementation with APIs
+"""basic red black bst implementation with APIs
 
 Author:
     Toshi
