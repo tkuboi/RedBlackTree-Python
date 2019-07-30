@@ -28,8 +28,6 @@ class BST:
             self.color = color
             self.left = left
             self.right = right
-            self.rank = 1 
-            self.size = 1 
 
         def __repr__(self):
             return "%s:%s{%s, left: %s, right: %s}"\
@@ -48,28 +46,30 @@ class BST:
     def insert(self, key, val=None):
         self.root = BST._insert(self.root, key, val)
         self.root.color = 'B'
-        BST._update_size(self.root)
+        self.num_items += 1
 
     @staticmethod
     def _size(tree):
         if tree is None:
             return 0
-        else:
-            return tree.size
-
-    @staticmethod
-    def _update_size(tree):
-        if tree is None:
-            return 0
-        tree.size = 1 + BST._update_size(tree.left) + BST._update_size(tree.right)
-        return tree.size
+        return 1 + BST._size(tree.left) + BST._size(tree.right)
 
     @staticmethod
     def _rank(tree, key):
+        """get the rank of a key.
+        The rank is the number of keys smaller that the key.
+        Args:
+            tree (BST): the bst
+            key (int): the key in the bst
+        Returns:
+            int : the rank of the key
+        """
         if tree is None:
             return 0
         if tree.key < key:
             return 1 + BST._size(tree.left) + BST._rank(tree.right, key)
+        elif tree.key == key:
+            return BST._size(tree.left)
         return BST._rank(tree.left, key)
 
     @staticmethod
@@ -80,17 +80,30 @@ class BST:
             tree.val = val
         elif tree.key > key:
             tree.left = BST._insert(tree.left, key, val)
-            tree.rank = tree.left.rank + 1
         else:
             tree.right = BST._insert(tree.right, key, val)
-            tree.right.rank = tree.rank + 1
         return BST._rebalance(tree)
 
     def range_count(self, lo, hi):
-        #return BST._range_count(self.root, lo, hi)
-        return BST._rank(self.root, hi) - BST._rank(self.root, lo) + 1
+        """get the number of key in the range.
+        lower bound is inclusive, but the upper bound is non-inclusive.
+        Args:
+            lo (int): the key on the lower end.
+            hi (int): the key on the higher end.
+        Returns:
+            int : the number of keys
+        """
+        return BST._rank(self.root, hi) - BST._rank(self.root, lo)
    
     def range(self, lo, hi):
+        """get the keys in the range.
+        lower bound is inclusive, but the upper bound is non-inclusive.
+        Args:
+            lo (int): the key on the lower end.
+            hi (int): the key on the higher end.
+        Returns:
+            list : a list of keys
+        """
         accum = []
         BST._range(self.root, lo, hi, accum)
         return accum
@@ -99,7 +112,7 @@ class BST:
     def _range(tree, lo, hi, accum):
         if tree is None:
             return
-        if tree.key > hi:
+        if tree.key >= hi:
             BST._range(tree.left, lo, hi, accum)
             return
         if tree.key < lo:
@@ -136,7 +149,7 @@ class BST:
     def delete(self, key):
         self.root = BST._delete(self.root, key)
         self.root.color = 'B'
-        BST._update_size(self.root)
+        self.num_items -= 1 
 
     @staticmethod
     def _delete(tree, key):
@@ -293,13 +306,14 @@ def shuffle(items):
         items[i], items[r] = items[r], items[i]
 
 def main():
-    random.seed(1)
     items = [i for i in range(10)]
+    #random.seed(1)
     #shuffle(items)
     bst = BST()
     for item in items:
         bst.insert(item)
     print(bst.root)
+    print(bst.size())
     print(bst.find_min())
     print(bst.find_max())
     print(bst.range_count(0,2))
@@ -311,6 +325,23 @@ def main():
     
     bst.delete(5)
     print(bst.root)
+    print(bst.size())
+    print(bst.find_min())
+    print(bst.find_max())
+    print(bst.range_count(0,2))
+    print(bst.range(0,2))
+    print(bst.range_count(2,5))
+    print(bst.range(2,5))
+    print(bst.range_count(7,7))
+    print(bst.range(7,7))
+
+    bst.delete(8)
+    print(bst.root)
+    print(bst.size())
+
+    bst.delete(9)
+    print(bst.root)
+    print(bst.size())
 
 if __name__ == '__main__':
     main()
